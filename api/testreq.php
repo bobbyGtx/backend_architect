@@ -11,6 +11,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 require_once __DIR__ . '/assets/utils/base-utils.php';
 require_once __DIR__ . '/assets/services/auth-service.php';
 require_once __DIR__ . '/assets/config/config.php';
+
 class TestRequest {
     private RequestMethod $requestMethod;
     private RequestLanguage $reqLanguage;
@@ -80,12 +81,12 @@ class TestRequest {
     private function processPost(): void {
         $loginFieldKey = 'email';
         $passwordFieldKey = 'password';
-        $incomingField = [
-            ['field' => $loginFieldKey, 'type' => 'string', 'required' => true],
-            ['field' => $passwordFieldKey, 'type' => 'string', 'required' => true],
+        $incomingFields =[
+            new FieldDefinition($loginFieldKey,DataType::String,true),
+            new FieldDefinition($passwordFieldKey,DataType::String,true)
         ];
         try {
-            $incData = BaseUtils::getIncomingData($incomingField,DataSources::Body);
+            $incData = BaseUtils::getIncomingData($incomingFields,DataSources::Body);
             $login = $incData[$loginFieldKey] ?? null;
             $password = $incData[$passwordFieldKey] ?? null;
         } catch (Exception $e) {
@@ -115,29 +116,35 @@ class TestRequest {
 
     private function processGet():void {
         $userIdKey = 'userId';
-        $incomingField = [
-            ['field' => $userIdKey, 'type' => 'int', 'required' => true],
-            ['field' => 'types', 'type' => 'array', 'required' => true],
-            ['field' => 'diameterFrom', 'type' => 'int', 'required' => true],
-            ['field' => 'diameterTo', 'type' => 'int', 'required' => true],
-            ['field' => 'heightFrom', 'type' => 'int', 'required' => true],
-            ['field' => 'heightTo', 'type' => 'int', 'required' => true],
-            ['field' => 'sort', 'type' => 'string', 'required' => true],
-            ['field' => 'priceFrom', 'type' => 'int', 'required' => true],
-            ['field' => 'priceTo', 'type' => 'int', 'required' => true],
-            ['field' => 'page', 'type' => 'int', 'required' => true],
-            ];
+        $typesKey = 'types';
+        $diameterFrom = 'diameterFrom';
+        $diameterTo = 'diameterTo';
+        $heightFrom = 'heightFrom';
+        $heightTo = 'heightTo';
+        $priceFrom = 'priceFrom';
+        $priceTo = 'priceTo';
+        $page = 'page';
+        $sort = 'sort';
+
+        $incomingFields=[
+            new FieldDefinition($userIdKey,DataType::Integer,true),
+            new FieldDefinition($typesKey,DataType::Array),
+            new FieldDefinition($diameterFrom,DataType::Integer),
+            new FieldDefinition($diameterTo,DataType::Integer),
+            new FieldDefinition($heightFrom,DataType::Integer),
+            new FieldDefinition($heightTo,DataType::Integer),
+            new FieldDefinition($priceFrom,DataType::Integer),
+            new FieldDefinition($priceTo,DataType::Integer),
+            new FieldDefinition($page,DataType::Integer),
+            new FieldDefinition($sort,DataType::String),
+        ];
         try {
-            $incData = BaseUtils::getIncomingData($incomingField,DataSources::URL);
+            $incData = BaseUtils::getIncomingData($incomingFields,DataSources::URL);
             $this->userId = $incData[$userIdKey];
-            $this->responseGetBody['debug'] = $incData;
         } catch (Exception $e) {
             $this->sendErrorResponse($e->getMessage(), $e->getCode());
         }
-/*
-        $userId = intval($_GET['userId']) ?? null;
-        if (empty($userId)) $this->sendErrorResponse("User id not found", 400);
-        $this->userId = $userId;*/
+
         try {
             $userCart = $this->getUserCart();
         } catch (Exception $e) {
